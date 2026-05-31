@@ -1,0 +1,5 @@
+# Ignore the environment variables file (Crucial!)
+.env
+
+# Ignore node_modules folder in JavaScript projects
+node_modules/
