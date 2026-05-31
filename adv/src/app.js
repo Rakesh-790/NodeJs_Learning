@@ -19,9 +19,20 @@ app.post('/create-notes', (req, res) => {
 });
 
 app.get('/notes', (req, res) => {
+    req.body;
+
     res.status(200).json({
         message: "all notes are fetched",
-        allNotes: allNotes
+        notes: allNotes
+    });
+});
+
+app.get('/notes-id/:index', (req, res)=>{
+    const index = req.params.index;
+
+    res.status(200).json({
+        message: "notes fetched by index",
+        note: allNotes[index]
     });
 });
 
