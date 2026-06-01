@@ -17,7 +17,7 @@ app.post('/notes', async (req, res) => {
 });
 
 app.get('/notes', async (req, res) =>{
-    const notes = await noteModel.find();
+    const notes = await noteModel.find(); // for finding all notes
     //there many methods of Model like find, findOne, findById etc.
     // find always return an array of object and if nothing found it returns empty array.
     // findOne always return an object and if nothing found it returns "null".
@@ -27,5 +27,39 @@ app.get('/notes', async (req, res) =>{
         notes: notes
     });
 });
+
+app.get('/notes/:id', async (req, res) =>{
+    const id = req.params.id;
+
+    const note = await noteModel.findOne({_id: id}); // for finding a single note
+
+    res.status(200).json({
+        message: "note fetched successfully",
+        note: note
+    });
+});
+
+
+app.delete('/notes/:id', async (req, res) => {
+    const id = req.params.id;
+
+    await noteModel.findOneAndDelete({_id: id}); // for deleting a single note
+
+    res.status(200).json({
+        message: "note deleted successfully"
+    });
+});
+
+app.patch('/notes/:id', async (req, res) =>{
+    const id = req.params.id;
+
+    const { title, description } = req.body;
+
+    await noteModel.findOneAndUpdate({_id: id}, {title, description});
+
+    res.status(200).json({
+        message: "note updated successfully"
+    });
+})
 
 module.exports = app;
