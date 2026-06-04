@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
-    image: String,
+    imageUrl: String,
     caption: String,
 }); // schema is a blueprint of the document. like how the collection look like.
 
