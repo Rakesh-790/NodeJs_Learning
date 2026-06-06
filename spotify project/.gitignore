@@ -1,0 +1,5 @@
+# Ignore the envirement file 
+.env
+
+# Ignore the node_module folder in javaScript project
+node_modules/
