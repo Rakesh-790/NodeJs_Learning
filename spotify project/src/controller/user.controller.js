@@ -41,7 +41,7 @@ async function registerUser(req, res) {
             role: user.role
         }
     });
-}
+};
 
 async function loginUser(req, res) {
     const { username, email, password } = req.body;
@@ -80,4 +80,9 @@ async function loginUser(req, res) {
     });
 };
 
-module.exports = { registerUser, loginUser }
+async function logoutUser(req, res){
+    res.clearCookie('token');
+    res.status(200).json({ message : "User Logout successfully "});
+};
+
+module.exports = { registerUser, loginUser, logoutUser};
