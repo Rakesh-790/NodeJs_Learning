@@ -1,88 +1,109 @@
 const userModel = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { default: AppError } = require('../utils/AppError');
+const { default: catchAsync } = require('../utils/catchAsync');
 
-async function registerUser(req, res) {
-    const { username, email, password, role = "user" } = req.body;
 
-    const isUserExist = await userModel.findOne({
-        $or: [
-            { username },
-            { email }
-        ]
-    });
+const registerUser = catchAsync(
+    async (req, res) => {
+        const { username, email, password, role = "user" } = req.body;
 
-    if (isUserExist) {
-        return res.status(409).json({ message: "user already exist" });
-    };
+        const isUserExist = await userModel.findOne({
+            $or: [
+                { username },
+                { email }
+            ]
+        });
 
-    const hashPassword = await bcrypt.hash(password, 12);
+        if (isUserExist) {
+            throw new AppError(
+                'User Already exist',
+                409
+            );
+        };
 
-    const user = await userModel.create({
-        username,
-        email,
-        password: hashPassword,
-        role
-    });
+        const hashPassword = await bcrypt.hash(password, 12);
 
-    const token = jwt.sign({
-        id: user._id,
-        role: user.role
-    }, process.env.JWT_SECRET);
+        const user = await userModel.create({
+            username,
+            email,
+            password: hashPassword,
+            role
+        });
 
-    res.cookie('token', token);
-
-    res.status(201).json({
-        message: 'user created successfully',
-        user: {
+        const token = jwt.sign({
             id: user._id,
-            username: user.username,
-            email: user.email,
             role: user.role
-        }
-    });
-};
+        }, process.env.JWT_SECRET);
 
-async function loginUser(req, res) {
-    const { username, email, password } = req.body;
+        res.cookie('token', token);
 
-    const user = await userModel.findOne({
-        $or: [
-            { username },
-            { email }
-        ]
-    });
-
-    if(!user){
-        return res.status(401).json({ message: "Invalid Credentials" });
+        res.status(201).json({
+            message: 'user created successfully',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
+        });
     }
+);
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if(!isPasswordValid){
-        return res.status(401).json({ message: "Invalid Credentials"});
-    }
+const loginUser = catchAsync(
+    async (req, res) => {
+        const { username, email, password } = req.body;
 
-    const token = jwt.sign({
-        id: user._id,
-        role: user.role
-    }, process.env.JWT_SECRET);
+        const user = await userModel.findOne({
+            $or: [
+                { username },
+                { email }
+            ]
+        });
 
-    res.cookie("token", token);
+        if (!user) {
+            throw new AppError(
+                'Invalid Credentials',
+                401
+            );
+        };
 
-    res.status(200).json({
-        message: "User logged in successfully",
-        user: {
-            username: user.username,
-            email: user.email,
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            throw new AppError(
+                'Invalid Credentials',
+                401
+            );
+        };
+
+        const token = jwt.sign({
+            id: user._id,
             role: user.role
-        }
-    });
-};
+        }, process.env.JWT_SECRET);
 
-async function logoutUser(req, res){
-    res.clearCookie('token');
-    res.status(200).json({ message : "User Logout successfully "});
-};
+        res.cookie("token", token);
 
-module.exports = { registerUser, loginUser, logoutUser};
+        res.status(200).json({
+            message: "User logged in successfully",
+            user: {
+                username: user.username,
+                email: user.email,
+                role: user.role
+            }
+        });
+    }
+);
+
+
+const logoutUser = catchAsync(
+    async (req, res) => {
+        res.clearCookie('token');
+        res.status(200).json({ message: "User Logout successfully " });
+    }
+);
+
+
+module.exports = { registerUser, loginUser, logoutUser };
