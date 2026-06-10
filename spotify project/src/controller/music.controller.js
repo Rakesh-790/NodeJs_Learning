@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
 const musicModel = require('../models/music.model');
 const uploadFile = require('../service/storage.service');
 const albumModel = require('../models/album.model');
 const { default: catchAsync } = require('../utils/catchAsync');
+const { default: AppError } = require('../utils/AppError');
 
 
 const createMusic = catchAsync(
@@ -11,12 +11,16 @@ const createMusic = catchAsync(
         const { title } = req.body;
         const file = req.file;
 
+        if(file == undefined){
+            throw new AppError('Upload a music file', 400);
+        }
+
         const result = await uploadFile(file.buffer.toString('base64'));
 
         const music = await musicModel.create({
             uri: result.url,
             title,
-            artist: req.user.id
+            artist: req.decoded.id
         });
 
         return res.status(201).json({
@@ -39,7 +43,7 @@ const createAlbum = catchAsync(
 
         const album = await albumModel.create({
             title,
-            artist: req.user.id,
+            artist: req.decoded.id,
             musics: musics
         });
 

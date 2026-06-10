@@ -54,12 +54,12 @@ const registerUser = catchAsync(
 
 const loginUser = catchAsync(
     async (req, res) => {
-        const { username, email, password } = req.body;
+        const { identifier, password } = req.body;
 
         const user = await userModel.findOne({
             $or: [
-                { username },
-                { email }
+                { username : identifier},
+                { email : identifier}
             ]
         });
 

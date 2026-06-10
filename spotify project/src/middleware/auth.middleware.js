@@ -11,11 +11,11 @@ async function authArtistCheck(req, res, next) {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+        req.decoded = decoded;
+
         if (decoded.role !== "artist") {
             return res.status(403).json({ message: "Don't have access to create an album or music." });
         }
-
-        const user = decoded;
 
         next();
 
