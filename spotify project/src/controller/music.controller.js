@@ -3,6 +3,7 @@ const uploadFile = require('../service/storage.service');
 const albumModel = require('../models/album.model');
 const { default: catchAsync } = require('../utils/catchAsync');
 const { default: AppError } = require('../utils/AppError');
+const paginate = require('../utils/paginate');
 
 
 const createMusic = catchAsync(
@@ -35,7 +36,6 @@ const createMusic = catchAsync(
     }
 );
 
-
 const createAlbum = catchAsync(
     async (req, res) => {
 
@@ -60,18 +60,39 @@ const createAlbum = catchAsync(
     }
 );
 
-
-
 const getAllMusics = catchAsync(
     async (req, res) => {
-        const allMusics = await musicModel.find().populate('artist', 'username');
+        // const allMusics = await musicModel.find().populate('artist', 'username');
+        const result = await paginate(
+            musicModel,
+            {},
+            req.query
+        );
 
         res.status(200).json({
             message: "All music fetched successfully",
-            musics: allMusics
+            musics: result.data,
+            pagination: result.pagination
+        });
+    }
+);
+
+const getAllAbums = catchAsync(
+    async(req, res) => {
+        const result = await paginate(
+            albumModel,
+            {},
+            req.query
+        );
+
+        return res.status(200).json({
+            message: "All Albums fetched successfully",
+            Albums: result.data,
+            pagination: result.pagination
         });
     }
 );
 
 
-module.exports = { createMusic, createAlbum, getAllMusics };
+
+module.exports = { createMusic, createAlbum, getAllMusics, getAllAbums };

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { default: AppError } = require('../utils/AppError');
 const { default: catchAsync } = require('../utils/catchAsync');
+const paginate = require('../utils/paginate');
 
 
 const registerUser = catchAsync(
@@ -105,5 +106,21 @@ const logoutUser = catchAsync(
     }
 );
 
+const getAllUser = catchAsync(
+    async (req, res) => {
+        const result = await paginate(
+            userModel,
+            {},
+            req.query
+        );
 
-module.exports = { registerUser, loginUser, logoutUser };
+        return res.status(200).json({
+            message: "all user fetch successfully",
+            users: result.data,
+            pagination: result.pagination
+        });
+    }
+);
+
+
+module.exports = { registerUser, loginUser, logoutUser, getAllUser};

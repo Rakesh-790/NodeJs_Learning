@@ -13,7 +13,9 @@ router.post('/uploadMusic', authArtistCheck, upload.single('music'), validate(up
 
 router.post('/album', authArtistCheck, validate(createAlbumSchemaValid), musicController.createAlbum);
 
-router.get('/', musicController.getAllMusics); 
+router.get('/musics', musicController.getAllMusics); 
+
+router.get('/albums', musicController.getAllAbums);
 
 
 module.exports = router;
