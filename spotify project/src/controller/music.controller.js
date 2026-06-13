@@ -4,6 +4,7 @@ const albumModel = require('../models/album.model');
 const { default: catchAsync } = require('../utils/catchAsync');
 const { default: AppError } = require('../utils/AppError');
 const paginate = require('../utils/paginate');
+const playlistService = require('../service/playlist.service');
 
 
 const createMusic = catchAsync(
@@ -12,7 +13,7 @@ const createMusic = catchAsync(
         const { title } = req.body;
         const file = req.file;
 
-        if(file == undefined){
+        if (file == undefined) {
             throw new AppError('Upload a music file', 400);
         }
 
@@ -60,6 +61,25 @@ const createAlbum = catchAsync(
     }
 );
 
+const createPlaylist = catchAsync(
+    async (req, res, next) => {
+        try {
+            const playlist = await playlistService.createPlaylist({
+                name: req.body.name,
+                owner: req.decoded.id
+            });
+
+            res.status(201).json({
+                success: true,
+                data: playlist
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 const getAllMusics = catchAsync(
     async (req, res) => {
         // const allMusics = await musicModel.find().populate('artist', 'username');
@@ -78,7 +98,7 @@ const getAllMusics = catchAsync(
 );
 
 const getAllAbums = catchAsync(
-    async(req, res) => {
+    async (req, res) => {
         const result = await paginate(
             albumModel,
             {},
@@ -93,6 +113,83 @@ const getAllAbums = catchAsync(
     }
 );
 
+const getMyPlaylists = catchAsync(
+    async (req, res, next) => {
+        try {
+            const playlists = await playlistService.getMyPlaylists(
+                req.decoded.id
+            );
 
+            res.status(200).json({
+                success: true,
+                data: playlists
+            });
 
-module.exports = { createMusic, createAlbum, getAllMusics, getAllAbums };
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+const addMusicToPlaylist = catchAsync(
+    async (req, res, next) => {
+        try {
+            const playlist = await playlistService.addMusicToPlaylist(
+                req.params.playlistId,
+                req.body.musicId,
+                req.decoded.id
+            );
+
+            res.status(200).json({
+                success: true,
+                message: 'Music added to playlist successfully',
+                data: playlist
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+const removeMusicFromPlaylist = catchAsync(
+    async (req, res, next) => {
+        try {
+            const playlist = await playlistService.removeMusicsFromPlaylist(
+                req.params.playlistId,
+                req.params.musicId,
+                req.decoded.id
+            );
+
+            res.status(200).json({
+                success: true,
+                message: 'Music removed from playlist successfully',
+                data: playlist
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+const deletePlaylist = catchAsync(
+    async (req, res, next) => {
+        try {
+            await playlistService.deletePlaylist(
+                req.params.playlistId,
+                req.decoded.id
+            );
+
+            res.status(200).json({
+                success: true,
+                message: 'Playlist deleted successfully'
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+module.exports = { createMusic, createAlbum, getAllMusics, getAllAbums, createPlaylist, getMyPlaylists, addMusicToPlaylist, removeMusicFromPlaylist, deletePlaylist };
