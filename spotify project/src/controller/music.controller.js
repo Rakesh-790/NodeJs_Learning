@@ -63,20 +63,18 @@ const createAlbum = catchAsync(
 
 const createPlaylist = catchAsync(
     async (req, res, next) => {
-        try {
-            const playlist = await playlistService.createPlaylist({
-                name: req.body.name,
-                owner: req.decoded.id
-            });
+        const owner = req.user.id;
 
-            res.status(201).json({
-                success: true,
-                data: playlist
-            });
+        const playlistData = await playlistService.createPlaylist(
+            req.body.name,
+            owner
+        );
 
-        } catch (error) {
-            next(error);
-        }
+        res.status(201).json({
+            success: true,
+            data: playlistData
+        });
+
     }
 );
 
@@ -115,81 +113,87 @@ const getAllAbums = catchAsync(
 
 const getMyPlaylists = catchAsync(
     async (req, res, next) => {
-        try {
-            const playlists = await playlistService.getMyPlaylists(
-                req.decoded.id
-            );
 
-            res.status(200).json({
-                success: true,
-                data: playlists
-            });
+        const owner = req.user.id
 
-        } catch (error) {
-            next(error);
-        }
+        const playlists = await playlistService.getMyPlaylists(
+            owner
+        );
+
+        res.status(200).json({
+            success: true,
+            data: playlists
+        });
+
+
     }
 );
 
 const addMusicToPlaylist = catchAsync(
     async (req, res, next) => {
-        try {
-            const playlist = await playlistService.addMusicToPlaylist(
-                req.params.playlistId,
-                req.body.musicId,
-                req.decoded.id
-            );
 
-            res.status(200).json({
-                success: true,
-                message: 'Music added to playlist successfully',
-                data: playlist
-            });
+        const owner = req.user.id;
 
-        } catch (error) {
-            next(error);
-        }
+        const playlist = await playlistService.addMusicToPlaylist(
+            req.params.playlistId,
+            req.body.musicId,
+            owner
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Music added to playlist successfully',
+            data: playlist
+        });
     }
 );
 
 const removeMusicFromPlaylist = catchAsync(
     async (req, res, next) => {
-        try {
-            const playlist = await playlistService.removeMusicsFromPlaylist(
-                req.params.playlistId,
-                req.params.musicId,
-                req.decoded.id
-            );
 
-            res.status(200).json({
-                success: true,
-                message: 'Music removed from playlist successfully',
-                data: playlist
-            });
+        const owner = req.user.id;
 
-        } catch (error) {
-            next(error);
-        }
+        const playlist = await playlistService.removeMusicsFromPlaylist(
+            req.params.playlistId,
+            req.params.musicId,
+            owner
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Music removed from playlist successfully',
+            data: playlist
+        });
+
+
     }
 );
 
 const deletePlaylist = catchAsync(
     async (req, res, next) => {
-        try {
-            await playlistService.deletePlaylist(
-                req.params.playlistId,
-                req.decoded.id
-            );
 
-            res.status(200).json({
-                success: true,
-                message: 'Playlist deleted successfully'
-            });
+        await playlistService.deletePlaylist(
+            req.params.playlistId,
+            req.user.id
+        );
 
-        } catch (error) {
-            next(error);
-        }
+        res.status(200).json({
+            success: true,
+            message: 'Playlist deleted successfully'
+        });
+
+
     }
 );
 
-module.exports = { createMusic, createAlbum, getAllMusics, getAllAbums, createPlaylist, getMyPlaylists, addMusicToPlaylist, removeMusicFromPlaylist, deletePlaylist };
+module.exports = {
+    createMusic,
+    createAlbum,
+    getAllMusics,
+    getAllAbums,
+    createPlaylist,
+    getMyPlaylists,
+    addMusicToPlaylist,
+    removeMusicFromPlaylist,
+    deletePlaylist
+};

@@ -35,7 +35,7 @@ const addMusicToPlaylist = async (playlistId, musicId, userId) => {
         playlistId,
         {
             $addToSet: {
-                songs: songId
+                musics : musicId
             }
         },
 
@@ -61,7 +61,7 @@ const removeMusicsFromPlaylist = async (playlistId, musicId, userId) => {
         playlistId,
         {
             $pull: {
-                music: musicId
+                musics: musicId
             }
         },
         {
