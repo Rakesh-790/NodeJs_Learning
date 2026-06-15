@@ -1,103 +1,36 @@
 const userModel = require('../models/user.model');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { default: AppError } = require('../utils/AppError');
 const { default: catchAsync } = require('../utils/catchAsync');
+const {registerUser : registerUserService, loginUser : loginUserService} = require('../service/auth.service');
 const paginate = require('../utils/paginate');
 
 
 const registerUser = catchAsync(
     async (req, res) => {
-        const { username, email, password, role = "user" } = req.body;
+        
+        const result = await registerUserService(req.body);
 
-        const isUserExist = await userModel.findOne({
-            $or: [
-                { username },
-                { email }
-            ]
-        });
-
-        if (isUserExist) {
-            throw new AppError(
-                'User Already exist',
-                409
-            );
-        };
-
-        const hashPassword = await bcrypt.hash(password, 12);
-
-        const user = await userModel.create({
-            username,
-            email,
-            password: hashPassword,
-            role
-        });
-
-        const token = jwt.sign({
-            id: user._id,
-            role: user.role
-        }, process.env.JWT_SECRET);
-
-        res.cookie('token', token);
+        res.cookie('token', result.accessToken);
 
         res.status(201).json({
             message: 'user created successfully',
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role
-            }
+            user: result.user
         });
     }
 );
-
 
 const loginUser = catchAsync(
     async (req, res) => {
-        const { identifier, password } = req.body;
 
-        const user = await userModel.findOne({
-            $or: [
-                { username : identifier},
-                { email : identifier}
-            ]
-        });
+        const result = await loginUserService(req.body);
 
-        if (!user) {
-            throw new AppError(
-                'Invalid Credentials',
-                401
-            );
-        };
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            throw new AppError(
-                'Invalid Credentials',
-                401
-            );
-        };
-
-        const token = jwt.sign({
-            id: user._id,
-            role: user.role
-        }, process.env.JWT_SECRET);
-
-        res.cookie("token", token);
+        res.cookie("token", result.accessToken);
 
         res.status(200).json({
             message: "User logged in successfully",
-            user: {
-                username: user.username,
-                email: user.email,
-                role: user.role
-            }
+            user: result.user
         });
     }
 );
-
 
 const logoutUser = catchAsync(
     async (req, res) => {

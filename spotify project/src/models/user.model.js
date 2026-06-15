@@ -10,16 +10,16 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        unique : [true, 'email is required']
+        unique: [true, 'email is required']
     },
     password: {
         type: String,
-        unique : [true, 'Password is required'],
+        unique: [true, 'Password is required'],
         minlength: [6, 'Password must be at least 6 characters long']
     },
     role: {
         type: String,
-        enum: [ 'user', 'artist'],
+        enum: ['user', 'artist'],
         default: 'user'
     }
 });
