@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'artist'],
         default: 'user'
+    },
+    refreshToken: {
+        type: String,
+        default: null
     }
 });
 

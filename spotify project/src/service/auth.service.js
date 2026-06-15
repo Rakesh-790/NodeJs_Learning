@@ -1,6 +1,6 @@
 const userModel = require("../models/user.model");
 const { default: AppError } = require("../utils/AppError");
-const generateAccessToken = require("../utils/jwt");
+const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require("../utils/jwt");
 const bcrypt = require('bcryptjs');
 
 
@@ -36,8 +36,15 @@ const registerUser = async ({
 
     const accessToken = generateAccessToken(user);
 
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+
+    await user.save();
+
     return {
         accessToken,
+        refreshToken,
         user: {
             id: user._id,
             username: user.username,
@@ -77,8 +84,15 @@ const loginUser = async ({
 
     const accessToken = generateAccessToken(user);
 
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+
+    await user.save();
+
     return {
         accessToken,
+        refreshToken,
         user: {
             id: user._id,
             username: user.username,
@@ -88,4 +102,39 @@ const loginUser = async ({
     };
 };
 
-module.exports = {registerUser, loginUser};
+const refreshAccessToken = async (refreshToken) => {
+
+    if (!refreshToken) {
+        throw new AppError("Refresh Token missing", 401);
+    }
+
+    let decoded;
+
+    try {
+        decoded = verifyRefreshToken(refreshToken);
+    } catch (error) {
+        throw new AppError("Invalid Refresh Token", 401);
+    };
+
+    const user = await userModel.findById(decoded.id);
+
+    if (!user) {
+        throw new AppError("User not Found", 404);
+    }
+
+    if (!user.refreshToken) {
+        throw new AppError("Refresh Token not found", 401);
+    }
+
+    if (user.refreshToken !== refreshToken) {
+        throw new AppError("Refresh Token mismatch", 401);
+    }
+
+    const newAccessToken = generateAccessToken(user);
+
+    return {
+        accessToken : newAccessToken
+    };
+};
+
+module.exports = { registerUser, loginUser, refreshAccessToken };

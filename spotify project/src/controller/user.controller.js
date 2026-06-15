@@ -1,6 +1,6 @@
 const userModel = require('../models/user.model');
 const { default: catchAsync } = require('../utils/catchAsync');
-const {registerUser : registerUserService, loginUser : loginUserService} = require('../service/auth.service');
+const {registerUser : registerUserService, loginUser : loginUserService, refreshAccessToken} = require('../service/auth.service');
 const paginate = require('../utils/paginate');
 
 
@@ -9,7 +9,9 @@ const registerUser = catchAsync(
         
         const result = await registerUserService(req.body);
 
-        res.cookie('token', result.accessToken);
+        res.cookie('accessToken', result.accessToken);
+
+        res.cookie('refreshToken', result.refreshToken);
 
         res.status(201).json({
             message: 'user created successfully',
@@ -23,7 +25,9 @@ const loginUser = catchAsync(
 
         const result = await loginUserService(req.body);
 
-        res.cookie("token", result.accessToken);
+        res.cookie('accessToken', result.accessToken);
+        
+        res.cookie('refreshToken', result.refreshToken);
 
         res.status(200).json({
             message: "User logged in successfully",
@@ -34,7 +38,8 @@ const loginUser = catchAsync(
 
 const logoutUser = catchAsync(
     async (req, res) => {
-        res.clearCookie('token');
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
         res.status(200).json({ message: "User Logout successfully " });
     }
 );
@@ -55,5 +60,29 @@ const getAllUser = catchAsync(
     }
 );
 
+const refreshToken = catchAsync(
+    async (req, res) => {
 
-module.exports = { registerUser, loginUser, logoutUser, getAllUser};
+        const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+        const { accessToken } = await refreshAccessToken(refreshToken);
+
+        res.cookie("accessToken", 
+            accessToken,
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 15 * 60 * 1000
+            }
+        );
+
+        return res.status(200).json({
+            success : true,
+            message: "Access Token Refreshed"
+        });
+    }
+);
+
+
+module.exports = { registerUser, loginUser, logoutUser, getAllUser, refreshToken};

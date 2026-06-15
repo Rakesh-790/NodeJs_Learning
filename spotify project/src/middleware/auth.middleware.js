@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { default: AppError } = require('../utils/AppError');
+const { verifyRefreshToken } = require('../utils/jwt');
 
 async function authArtistCheck(req, res, next) {
-    const token = req.cookies.token;
+    const token = req.cookies.accessToken;
 
     if (!token) {
         throw new AppError('unauthorize', 401);
@@ -28,7 +29,7 @@ async function authArtistCheck(req, res, next) {
 }
 
 async function authCheck(req, res, next) {
-    const token = req.cookies.token;
+    const token = req.cookies.accessToken;
 
     if (!token) {
         throw new AppError('unauthorize', 401);

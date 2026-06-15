@@ -1,7 +1,7 @@
 const express = require('express');
 const musicController = require('../controller/music.controller');
 const multer = require('multer');
-const {authArtistCheck, authCheck } = require('../middleware/auth.middleware');
+const { authArtistCheck, authCheck } = require('../middleware/auth.middleware');
 const { uploadMusicSchemaValid, createAlbumSchemaValid } = require('../validation/music.validation');
 const validate = require('../middleware/validate.middleware');
 
@@ -19,9 +19,11 @@ router.post('/:playlistId/music', authCheck, musicController.addMusicToPlaylist)
 
 router.get('/playlist', authCheck, musicController.getMyPlaylists);
 
-router.get('/musics', musicController.getAllMusics); 
+router.get('/musics', musicController.getAllMusics);
 
-router.get('/albums', musicController.getAllAbums);
+router.get('/personalAlbums', authArtistCheck, musicController.getPersonalAbums);
+
+router.get('/albums', authCheck, musicController.getAllAbums);
 
 router.delete('/:playlistId/music/:musicId', authCheck, musicController.removeMusicFromPlaylist);
 

@@ -111,6 +111,26 @@ const getAllAbums = catchAsync(
     }
 );
 
+const getPersonalAbums = catchAsync(
+    async (req, res) => {
+
+        const artist = req.decoded.id;
+        const username = req.decoded.username;
+
+        const result = await paginate(
+            albumModel,
+            { artist : artist},
+            req.query
+        );
+
+        return res.status(200).json({
+            message: "All personal Albums fetched successfully",
+            Albums: result.data,
+            pagination: result.pagination
+        });
+    }
+);
+
 const getMyPlaylists = catchAsync(
     async (req, res, next) => {
 
@@ -195,5 +215,6 @@ module.exports = {
     getMyPlaylists,
     addMusicToPlaylist,
     removeMusicFromPlaylist,
-    deletePlaylist
+    deletePlaylist,
+    getPersonalAbums
 };
