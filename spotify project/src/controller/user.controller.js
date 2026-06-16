@@ -65,7 +65,7 @@ const refreshToken = catchAsync(
 
         const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
-        const { accessToken } = await refreshAccessToken(refreshToken);
+        const { accessToken, refreshToken : newRefreshToken } = await refreshAccessToken(refreshToken);
 
         res.cookie("accessToken", 
             accessToken,
@@ -77,9 +77,20 @@ const refreshToken = catchAsync(
             }
         );
 
+        res.cookie(
+            "refreshToken",
+            newRefreshToken,
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 30* 24 * 60 * 60 * 1000
+            }
+        );
+
         return res.status(200).json({
             success : true,
-            message: "Access Token Refreshed"
+            message: "Tokens are Refreshed"
         });
     }
 );

@@ -132,8 +132,15 @@ const refreshAccessToken = async (refreshToken) => {
 
     const newAccessToken = generateAccessToken(user);
 
+    const newRefreshToken = generateRefreshToken(user);
+
+    user.refreshToken = newRefreshToken;
+
+    await user.save();
+
     return {
-        accessToken : newAccessToken
+        accessToken : newAccessToken,
+        refreshToken : newRefreshToken
     };
 };
 
